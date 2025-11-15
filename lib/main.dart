@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+const String bookingUrl = 'https://pulmomedicalcentre.com/booking_doctor.php';
+
 void main() {
   runApp(const MyApp());
 }
@@ -100,7 +102,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
           },
         ),
       )
-      ..loadRequest(Uri.parse('https://pulmomedicalcentre.com/booking_doctor.php'));
+      ..loadRequest(Uri.parse(bookingUrl));
   }
 
   @override
@@ -111,6 +113,15 @@ class _WebViewScreenState extends State<WebViewScreen> {
         backgroundColor: Colors.blue.shade700,
         foregroundColor: Colors.white,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.open_in_browser),
+            onPressed: () async {
+              await launchUrl(Uri.parse(bookingUrl), mode: LaunchMode.externalApplication);
+            },
+            onLongPress: () {
+              _controller.loadRequest(Uri.parse(bookingUrl));
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => _controller.reload(),
