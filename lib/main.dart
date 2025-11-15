@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() {
   runApp(const MyApp());
@@ -53,6 +54,49 @@ class _WebViewScreenState extends State<WebViewScreen> {
             setState(() {
               _isLoading = false;
             });
+          },
+          onNavigationRequest: (NavigationRequest request) async {
+            final uri = Uri.parse(request.url);
+
+            // Handle WhatsApp
+            if (request.url.contains("wa.me") ||
+                request.url.startsWith("whatsapp://")) {
+              if (mounted) {
+                await launchUrl(
+                  uri,
+                  mode: LaunchMode.externalApplication,
+                );
+              }
+              return NavigationDecision.prevent;
+            }
+
+            // Handle phone dialer, email, external links
+            if (uri.scheme == "tel" ||
+                uri.scheme == "mailto" ||
+                uri.scheme == "intent") {
+              if (mounted) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              }
+              return NavigationDecision.prevent;
+            }
+
+            // Handle intent:// links
+            if (request.url.startsWith("intent://")) {
+              final fallbackUrl = request.url.split("S.browser_fallback_url=")[1]
+                  .split(";")[0];
+
+              final decodedUrl = Uri.decodeComponent(fallbackUrl);
+
+              if (mounted) {
+                await launchUrl(
+                  Uri.parse(decodedUrl),
+                  mode: LaunchMode.externalApplication,
+                );
+              }
+              return NavigationDecision.prevent;
+            }
+
+            return NavigationDecision.navigate;
           },
         ),
       )
